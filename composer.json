@@ -15,7 +15,8 @@
         "guzzlehttp/guzzle": "^7.0",
         "vlucas/phpdotenv": "^5.6",
         "ext-mbstring": "*",
-        "jenssegers/agent": "^2.6" 
+        "jenssegers/agent": "^2.6",
+        "asiasiapac/internal-logger": "^1.1" 
     },
     "prefer-stable": true
 }

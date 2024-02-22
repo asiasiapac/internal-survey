@@ -2,27 +2,41 @@
 namespace AsiAsiapac\InternalSurvey;
 
 use GuzzleHttp\Client;
+use AsiAsiapac\InternalLogger\SysLogger;
 
 class Get{
 
-    public static function questions(){
-        /*$client = new Client(['base_uri' => $_ENV['ASI_SURVEY_HOST_ADDR'] ]);
-        // Send a request to https://foo.com/api/test
-        $response = $client->request('GET', 'test');
-        return $response;
-        */
-        $resp = [
-             
-            "project_code"=> "CDP",
-            "project name"=> "'LMS Feedback",
-            "survey_label"=> "Penilaian terhadap materi/ modul pembelajaran",
-            "questions"=> [ 
-                    ["id"=>1,"item"=>"Materi disampaikan secara urut."],
-                    ["id"=>2,"item"=>"Materi pembelajaran mudah dipahami."],
-                    ["id"=>3,"item"=>"Relevansi materi dengan topik pembelajaran."] 
-            ]
-                
+    /*
+        *Penjelasan
+
+        ASI_SURVEY_HOST_ADDR : domain API Survey
+    */
+    public static function questions($survey_code){
+        $client = new Client(['base_uri' => $_ENV['ASI_SURVEY_HOST_ADDR'] ]);
+
+        // Send a request to api
+        $response = $client->request('GET', $survey_code);
+
+        $data = [];
+        $status = $response->getStatusCode();
+        $message = '';
+
+        if($response->getStatusCode() == 200){
+            try {
+                $contents = $response->getBody()->getContents();
+
+                $data = json_decode($contents, true);
+            } catch (Exception $e) {
+                $message = $e->getMessage();
+
+                SysLogger::save(SysLogger::ERROR, $_SERVER['REQUEST_URI'], 'internal-survey.Get.questions', 'Gagal mendapatkan pertanyaan, survey_code : '.$survey_code.' - '.$message);
+            }
+        }
+
+        return [
+            'status'    => $status,
+            'message'   => $message,
+            'response'  => $data
         ];
-            return json_encode($resp); 
     }
 }
