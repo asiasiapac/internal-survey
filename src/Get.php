@@ -1,71 +1,59 @@
 <?php 
 namespace AsiAsiapac\InternalSurvey;
 
-use GuzzleHttp\Client;
-use AsiAsiapac\InternalLogger\SysLogger;
+use AsiAsiapac\InternalSurvey\Component;
 
-class Get{
+/*
+    *explain
 
-    /*
-        *Penjelasan
+    ASI_SURVEY_HOST_ADDR : domain API Survey
 
-        ASI_SURVEY_HOST_ADDR : domain API Survey
-    */
-    public static function questions($survey_code){
-        $client = new Client(['base_uri' => $_ENV['ASI_SURVEY_HOST_ADDR'] ]);
+    list public function
 
+    - questions : get the specific survey
+    - alreadyDone : check the participant already done the survey or not
+    - result : get the summary survey
+    - history : get the list of participant who done the survey
+*/
+
+class Get extends Component{
+
+    public function questions($survey_code){
         // Send a request to api
-        $response = $client->request('GET', $survey_code);
-
-        $data = [];
-        $status = $response->getStatusCode();
-        $message = '';
-
-        if($response->getStatusCode() == 200){
-            try {
-                $contents = $response->getBody()->getContents();
-
-                $data = json_decode($contents, true);
-            } catch (Exception $e) {
-                $message = $e->getMessage();
-
-                SysLogger::save(SysLogger::ERROR, $_SERVER['REQUEST_URI'], 'internal-survey.Get.questions', 'Gagal mendapatkan pertanyaan, survey_code : '.$survey_code.' - '.$message);
-            }
-        }
-
-        return [
-            'status'    => $status,
-            'message'   => $message,
-            'response'  => $data
-        ];
+        return $this->_execute('GET', $survey_code);
     }
 
-    public static function result($survey_code){
-        $client = new Client(['base_uri' => $_ENV['ASI_SURVEY_HOST_ADDR'] ]);
+    /*
+        parameter data berisi array
 
+        - email = email dari peserta
+    */
+    public function alreadyDone($survey_code, $data = [])
+    {
         // Send a request to api
-        $response = $client->request('GET', $survey_code.'/result');
+        return $this->_execute('POST', $survey_code.'/done', $data);
+    }
 
-        $data = [];
-        $status = $response->getStatusCode();
-        $message = '';
+    public function result($survey_code){
+        // Send a request to api
+        return $this->_execute('GET', $survey_code.'/result');
+    }
 
-        if($response->getStatusCode() == 200){
-            try {
-                $contents = $response->getBody()->getContents();
+    public function history($survey_code, $link_page = '', $search = '', $limit = 10)
+    {
+        $default_url = $survey_code.'/history';
 
-                $data = json_decode($contents, true);
-            } catch (Exception $e) {
-                $message = $e->getMessage();
-
-                SysLogger::save(SysLogger::ERROR, $_SERVER['REQUEST_URI'], 'internal-survey.Get.result', 'Gagal mendapatkan hasil survey, survey_code : '.$survey_code.' - '.$message);
-            }
+        if(!empty($link_page)){
+            $url = $link_page;
+        }else{
+            $url = $default_url;
         }
 
-        return [
-            'status'    => $status,
-            'message'   => $message,
-            'response'  => $data
-        ];
+        $result = $this->_execute('POST', $url, [
+            'search'    => $search,
+            'limit'     => $limit,
+        ]);
+
+        return $result;
     }
 }
