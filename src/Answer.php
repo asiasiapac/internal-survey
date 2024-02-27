@@ -33,11 +33,13 @@ class Answer extends Component
 	{
         $response = $this->_execute('POST', $survey_code, $data);
 
+        $response = $response['response'];
+
         return [
             'status'    => $response['status'],
             'message'   => $response['message'],
             'request'  	=> $data,
-            'error'     => $response['response']['error'],
+            'error'     => $response['error'],
         ];
 	}
 }
