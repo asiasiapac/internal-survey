@@ -56,4 +56,10 @@ class Get extends Component{
 
         return $result;
     }
+
+    public function participantDetail($survey_code, $email)
+    {
+        // Send a request to api
+        return $this->_execute('POST', $survey_code.'/detail', ['email' => $email]);
+    }
 }
